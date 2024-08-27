@@ -1,48 +1,89 @@
-import InfiniteScroll from "@/components/home/InfiniteScroll";
-import Github from "@/components/icons/Github";
-import Button from "@/components/ui/button";
-import Starters from "@/components/home/Starters";
+"use client";
+
+import * as React from "react";
+import { User, Image, ArrowLeftRight, Workflow } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Sidenav } from "@/components/Sidenav";
 
 export function Home() {
-  const scrollToTabs = () => {
-    const tabsSection = document.getElementById("starters");
-    if (tabsSection) {
-      tabsSection.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+    const [isCollapsed, setIsCollapsed] = React.useState(false);
+    const defaultLayout = [20, 80];
 
-  return (
-    <main className="max-w-[1100px] mx-auto">
-      <section className="mx-auto flex flex-col items-center justify-center min-h-[90vh]">
-        <h1 className="text-[3em] md:text-[4em] lg:text-[7em] flex flex-col gap-5 text-center font-bold font-neueMachinaBold text-balance md:leading-[auto] lg:leading-tight text-black">
-          <span className="bg-orange-400 lg:pt-5 px-2 leading-tight">
-            Hackathon's
-          </span>{" "}
-          <span>
-            <span className="bg-fuchsia-500 pt-5 px-2">Starter</span>{" "}
-            <span className="bg-fuchsia-500 pt-5 px-2">Kits</span>
-          </span>
-        </h1>
-        <p className="text-[1.5em] md:text-[2em] mt-4 text-center font-bold">
-          An introduction for building dApps on Bitcoin
-        </p>
-        <div className="flex gap-5">
-          <Button className="mt-10 mx-auto flex gap-2">
-            <Github /> See code
-          </Button>
-          <Button className="mt-10 mx-auto" onClick={scrollToTabs}>
-            See more
-          </Button>
-        </div>
-      </section>
-
-      <div className="my-10">
-        <InfiniteScroll />
-      </div>
-
-      <div className="my-40">
-        <Starters />
-      </div>
-    </main>
-  );
+    return (
+        <TooltipProvider delayDuration={0}>
+            <ResizablePanelGroup
+                direction="horizontal"
+                onLayout={(sizes: number[]) => {
+                    document.cookie = `react-resizable-panels:layout:mail=${JSON.stringify(
+                        sizes
+                    )}`;
+                }}
+                className="grow items-stretch"
+            >
+                <ResizablePanel
+                    defaultSize={defaultLayout[0]}
+                    collapsible={true}
+                    minSize={15}
+                    maxSize={20}
+                    onCollapse={() => {
+                        setIsCollapsed(true);
+                        document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
+                            true
+                        )}`;
+                    }}
+                    onResize={() => {
+                        setIsCollapsed(false);
+                        document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
+                            false
+                        )}`;
+                    }}
+                    className={cn(
+                        isCollapsed &&
+                            "min-w-[50px] transition-all duration-300 ease-in-out"
+                    )}
+                >
+                    <Sidenav
+                        isCollapsed={isCollapsed}
+                        links={[
+                            {
+                                title: "Profile",
+                                label: "",
+                                icon: User,
+                                variant: "ghost",
+                            },
+                            {
+                                title: "Collections",
+                                label: "",
+                                icon: Image,
+                                variant: "default",
+                            },
+                            {
+                                title: "Swap",
+                                label: "",
+                                icon: ArrowLeftRight,
+                                variant: "ghost",
+                            },
+                            {
+                                title: "Bridge",
+                                label: "",
+                                icon: Workflow,
+                                variant: "ghost",
+                            },
+                        ]}
+                    />
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
+                    Ordinal Page
+                </ResizablePanel>
+            </ResizablePanelGroup>
+        </TooltipProvider>
+    );
 }
