@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/resizable";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidenav } from "@/components/Sidenav";
+import { Collection } from "@/components/collection/Collection";
 
 export function Home() {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -81,7 +82,7 @@ export function Home() {
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-                    Ordinal Page
+                    <Collection />
                 </ResizablePanel>
             </ResizablePanelGroup>
         </TooltipProvider>
