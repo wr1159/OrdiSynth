@@ -9,7 +9,8 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import collectionCover from "@/images/pizzaninja.gif";
 import { Stat } from "./Stat";
-import { CollectionButton } from "./CollectionButton";
+import { CollectionButton } from "../CollectionButton";
+import { MintDialog } from "./MintDialog";
 
 export function CollectionInfo() {
     return (
@@ -45,10 +46,7 @@ export function CollectionInfo() {
             </CardContent>
             <CardFooter className="flex justify-end gap-4">
                 <TooltipProvider>
-                    <CollectionButton
-                        buttonText="Mint"
-                        tooltipText="Convert your Pizza Ninja to an W-Pizza Ninja"
-                    />
+                    <MintDialog />
                     <CollectionButton
                         buttonText="Burn"
                         tooltipText="Burn W-Pizza Ninja to get back your Pizza Ninja"

@@ -8,16 +8,18 @@ import { Button } from "@/components/ui/button";
 interface CollectionButtonProps {
     buttonText: string;
     tooltipText: string;
+    handleOpen?: () => void;
 }
 
 export function CollectionButton({
     buttonText,
     tooltipText,
+    handleOpen,
 }: CollectionButtonProps) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <Button>{buttonText}</Button>
+                <Button onClick={handleOpen}>{buttonText}</Button>
             </TooltipTrigger>
             <TooltipContent>
                 <p>{tooltipText}</p>
