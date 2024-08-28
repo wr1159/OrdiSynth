@@ -23,13 +23,13 @@ export function CollectionInfo() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex gap-16">
+                <div className="flex gap-4 md:gap-16 flex-col md:flex-row items-center">
                     <img
                         src={collectionCover}
                         alt="Pizza Ninjas"
-                        className="w-32 h-32 rounded-lg"
+                        className="w-48 h-48 rounded-lg"
                     />
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                         <Stat heading="Total Supply" amount="1,500" />
                         <Stat heading="Owners" amount="1,234" />
                         <Stat heading="Price" amount="0.15 RBTC" />

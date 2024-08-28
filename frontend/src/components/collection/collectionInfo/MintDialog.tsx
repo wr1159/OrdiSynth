@@ -37,7 +37,10 @@ export function MintDialog() {
                 tooltipText="Convert your Pizza Ninja to an W-Pizza Ninja"
                 handleOpen={handleOpen}
             />
-            <DialogContent hideCloseButton={isLoading}>
+            <DialogContent
+                hideCloseButton={isLoading}
+                className="max-w-[90%] md:max-w-[700px]"
+            >
                 {isLoading ? (
                     <div className="mx-auto">
                         <LoaderIcon className="animate-spin" />
@@ -54,11 +57,11 @@ export function MintDialog() {
                         </DialogHeader>
                         <RadioGroup
                             defaultValue="1"
-                            className="grid grid-cols-3 gap-4 my-6"
+                            className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6"
                             name="ordinal"
                         >
                             {ownedOrdinals.map((item) => (
-                                <div>
+                                <div key={item}>
                                     <RadioGroupItem
                                         value={item}
                                         id={item}
@@ -70,7 +73,7 @@ export function MintDialog() {
                                     >
                                         <img
                                             src={ordinal}
-                                            className="rounded"
+                                            className="rounded w-24 h-24"
                                         />
                                         Pizza Ninja #{item}
                                     </Label>

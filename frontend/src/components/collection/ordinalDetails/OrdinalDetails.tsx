@@ -45,7 +45,7 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
             </div>
             <DialogContent
                 hideCloseButton={isLoading}
-                className="min-w-[800px]"
+                className="max-w-[90%] max-h-[90%] md:min-w-[800px] md:max-w-[1000px] overflow-auto"
             >
                 {isLoading ? (
                     <div className="mx-auto">
@@ -58,7 +58,7 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
                                 Pizza Ninja #{showOrdinal}
                             </DialogTitle>
                         </DialogHeader>
-                        <div className="flex gap-8 min-h-96">
+                        <div className="flex gap-8 min-h-96 flex-col md:flex-row">
                             <div className="flex gap-4 flex-col">
                                 <img src={ordinal} className="rounded w-96" />
                                 <div>
