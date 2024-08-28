@@ -32,14 +32,17 @@ export function CollectionInfo() {
                     <div className="grid grid-cols-4 gap-4">
                         <Stat heading="Total Supply" amount="1,500" />
                         <Stat heading="Owners" amount="1,234" />
-                        <Stat heading="Price" amount="0.15 BTC" />
-                        <Stat heading="24H Volume" amount="0.15 BTC" />
-
-                        <Stat heading="W-Pizza Ninja Balance" amount="2" />
+                        <Stat heading="Price" amount="0.15 RBTC" />
+                        <Stat heading="24H Volume" amount="0.15 RBTC" />
+                        <Stat
+                            heading="W-Pizza Ninja Balance"
+                            amount="2"
+                            className="col-span-2"
+                        />
                         <Stat
                             heading="Number of Bridged Pizza Ninjas"
                             amount="1,234"
-                            className="col-span-3"
+                            className="col-span-2"
                         />
                     </div>
                 </div>
@@ -47,10 +50,6 @@ export function CollectionInfo() {
             <CardFooter className="flex justify-end gap-4">
                 <TooltipProvider>
                     <MintDialog />
-                    <CollectionButton
-                        buttonText="Burn"
-                        tooltipText="Burn W-Pizza Ninja to get back your Pizza Ninja"
-                    />
                     <CollectionButton
                         buttonText="Add LP"
                         tooltipText="Provide liquidity to the W-Pizza Ninja pool"
