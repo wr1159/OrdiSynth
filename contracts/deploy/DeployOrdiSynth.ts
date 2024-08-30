@@ -2,13 +2,13 @@ import { DeployFunction } from "hardhat-deploy/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-	const { deployer, owner } = await hre.getNamedAccounts()
+	const { deployer } = await hre.getNamedAccounts()
 
-	await hre.deployments.deploy("MockERC1155", {
+	await hre.deployments.deploy("OrdiSynth", {
 		from: deployer,
-		args: ["PizzaNinjas", "PN", "ipfs://base-uri/", "ipfs://contract-uri", owner],
+		args: ["0xf55c496bb1058690db1401c4b9c19f3f44374961"],
 		log: true,
 	})
 }
 export default func
-func.tags = ["1155"]
+func.tags = ["ordisynth"]

@@ -20,7 +20,9 @@ import "./tasks/erc20/mint";
 import "./tasks/erc1155/mint";
 import "./tasks/erc1155/base-uri";
 import "./tasks/erc1155/contract-uri";
+import "./tasks/erc1155/balance-of";
 
+import "./tasks/ordisynth/deposit";
 // Environment variable setup
 const RSK_MAINNET_RPC_URL = process.env.RSK_MAINNET_RPC_URL;
 const RSK_TESTNET_RPC_URL = process.env.RSK_TESTNET_RPC_URL;
@@ -40,14 +42,15 @@ if (!PRIVATE_KEY) {
 }
 
 // Hardhat configuration
+// Hardhat configuration
 const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
             // If you want to do some forking, uncomment this
-            // forking: {
-            //   url: MAINNET_RPC_URL
-            // }
+            forking: {
+              url: RSK_TESTNET_RPC_URL
+            }
         },
         localhost: {
             url: "http://127.0.0.1:8545",
