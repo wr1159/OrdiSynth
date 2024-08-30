@@ -61,7 +61,7 @@ describe("OrdiSynth", () => {
 			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(1999)
 			expect(await erc1155Contract.balanceOf(contractAddress, 1)).to.equal(1)
 
-			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthByContractAddress(erc1155contractAddress))
+			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(erc1155contractAddress))
 			expect(await synthTokenContract.balanceOf(deployer)).to.equal(1)
 			expect(await synthTokenContract.totalSupply()).to.equal(1)
 		})
@@ -84,11 +84,38 @@ describe("OrdiSynth", () => {
 			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(3)
 			expect(await erc1155Contract.balanceOf(contractAddress, 1)).to.equal(2)
 
-			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthByContractAddress(erc1155contractAddress))
+			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(erc1155contractAddress))
 			expect(await synthTokenContract.balanceOf(deployer)).to.equal(2)
 			expect(await synthTokenContract.totalSupply()).to.equal(2)
 		})
 	  
+	})
+	describe("Redeem Functionality", () => {
+		it("Should Burn SynthToken and Get ERC1155 when redeeming", async () => {
+			const { contract, contractAddress, deployer, erc1155Contract, erc1155contractAddress} = await setupFixture()
+
+			expect(await erc1155Contract["totalSupply(uint256)"](1)).to.equal(0)
+
+			await erc1155Contract.mintBatch(deployer, [1], [1])
+
+			expect(await erc1155Contract["totalSupply(uint256)"](1)).to.equal(1)
+			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(1)
+
+			await erc1155Contract.setApprovalForAll(contractAddress, true)
+			await contract.depositForSynth(erc1155contractAddress, 1, 1)
+			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(0)
+			expect(await erc1155Contract.balanceOf(contractAddress, 1)).to.equal(1)
+
+			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(erc1155contractAddress))
+			expect(await synthTokenContract.balanceOf(deployer)).to.equal(1)
+			expect(await synthTokenContract.totalSupply()).to.equal(1)
+
+			await synthTokenContract.approve(contractAddress, 1)
+			await contract.redeemSynth(erc1155contractAddress, 1, 1);
+			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(1)
+			expect(await erc1155Contract.balanceOf(contractAddress, 1)).to.equal(0)
+			expect(await synthTokenContract.totalSupply()).to.equal(0)
+		})
 	})
 
 })
