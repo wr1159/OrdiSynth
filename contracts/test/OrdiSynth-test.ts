@@ -7,6 +7,7 @@ describe("OrdiSynth", () => {
 		const signers = await getNamedAccounts()
 
 		const uniswapRouter = "0xf55c496bb1058690db1401c4b9c19f3f44374961"
+		const uniswapContract = ethers.getContractAt("IUniswapV2Router02", uniswapRouter)
 
 		const contract = await ethers.deployContract(
 			"OrdiSynth",
@@ -37,6 +38,7 @@ describe("OrdiSynth", () => {
 			contractConstructor: {
 				uniswapRouter,
 			},
+			uniswapContract,
 		}
 	})
 
@@ -115,6 +117,23 @@ describe("OrdiSynth", () => {
 			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(1)
 			expect(await erc1155Contract.balanceOf(contractAddress, 1)).to.equal(0)
 			expect(await synthTokenContract.totalSupply()).to.equal(0)
+		})
+	})
+	describe("Add Liquidity Functionality", () => {
+		it("Should Add Liquidity to SynthToken", async () => {
+			const { contract, contractAddress, deployer, erc1155Contract, erc1155contractAddress, contractConstructor } = await setupFixture()
+
+			await erc1155Contract.mintBatch(deployer, [1], [1000])
+			await erc1155Contract.setApprovalForAll(contractAddress, true)
+			await contract.addLiquidityToRouter(erc1155contractAddress, 1, 1000, {value: "10000"})
+			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(0)
+			expect(await erc1155Contract.balanceOf(contractAddress, 1)).to.equal(1000)
+
+			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(erc1155contractAddress))
+			expect(await synthTokenContract.balanceOf(deployer)).to.equal(0)
+			expect(await synthTokenContract.totalSupply()).to.equal(1000)
+
+
 		})
 	})
 
