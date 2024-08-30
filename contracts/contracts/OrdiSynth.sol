@@ -19,11 +19,11 @@ contract OrdiSynth is ERC1155Holder {
 
   // depositForSynth is a function that allows users to deposit erc1155 tokens to mint a synth
   // Ensure that the user has approved transfer
-  function depositForSynth(address contractAddress, uint tokenId, uint256 amount) public {
+  function depositForSynth(address contractAddress, uint tokenId, uint256 erc1155Amount) public {
     SynthToken synthToken;
     IERC1155 erc1155 = IERC1155(contractAddress);
     // 1. transfer erc1155 tokens to this contract
-    erc1155.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
+    erc1155.safeTransferFrom(msg.sender, address(this), tokenId, erc1155Amount, "");
 
     // 2. set the token address to the synthByContractAddress mapping
     if (synthAddressByContractAddress[contractAddress] != address(0)) {
@@ -34,32 +34,36 @@ contract OrdiSynth is ERC1155Holder {
       synthAddressByContractAddress[contractAddress] = address(synthToken);
     }
     // 3. mint synth tokens to the user
-    ownedErc1155ByContractAddress[contractAddress] += amount;
-    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] += amount;
-    synthToken.mint(msg.sender, amount);
+    ownedErc1155ByContractAddress[contractAddress] += erc1155Amount;
+    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] += erc1155Amount;
+
+    uint256 mintAmount = erc1155Amount * (10**synthToken.decimals());
+    synthToken.mint(msg.sender, mintAmount);
     return;
   }
 
   // redeemSynth is a function that allows users to redeem synth tokens for their erc1155 tokens
-  function redeemSynth(address contractAddress, uint tokenId, uint256 amount) public {
+  function redeemSynth(address contractAddress, uint tokenId, uint256 erc1155Amount) public {
     SynthToken synthToken = SynthToken(synthAddressByContractAddress[contractAddress]);
     IERC1155 erc1155 = IERC1155(contractAddress);
     // 1. burn synth tokens from the user
-    synthToken.transferFrom(msg.sender, address(this), amount);
-    synthToken.burn(amount);
-    ownedErc1155ByContractAddress[contractAddress] -= amount;
-    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] -= amount;
+    uint256 synthAmount = erc1155Amount * (10**synthToken.decimals());
+    synthToken.transferFrom(msg.sender, address(this), synthAmount);
+    synthToken.burn(synthAmount);
+
+    ownedErc1155ByContractAddress[contractAddress] -= erc1155Amount;
+    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] -= erc1155Amount;
     // 2. transfer erc1155 tokens to the user
     erc1155.setApprovalForAll(msg.sender, true);
-    erc1155.safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
+    erc1155.safeTransferFrom(address(this), msg.sender, tokenId, erc1155Amount, "");
     return;
   }
 
-  function addLiquidityToRouter(address contractAddress, uint tokenId, uint256 amount) public payable {
+  function addLiquidityToRouter(address contractAddress, uint tokenId, uint256 erc1155Amount) public payable {
     SynthToken synthToken;
     IERC1155 erc1155 = IERC1155(contractAddress);
     // 1. transfer erc1155 tokens to this contract
-    erc1155.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
+    erc1155.safeTransferFrom(msg.sender, address(this), tokenId, erc1155Amount, "");
 
     // 2. set the token address to the synthByContractAddress mapping
     if (synthAddressByContractAddress[contractAddress] != address(0)) {
@@ -69,16 +73,18 @@ contract OrdiSynth is ERC1155Holder {
       synthToken = new SynthToken("name", "symbol", address(this));
       synthAddressByContractAddress[contractAddress] = address(synthToken);
     }
-    ownedErc1155ByContractAddress[contractAddress] += amount;
-    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] += amount;
-    synthToken.mint(address(this), amount);
+    ownedErc1155ByContractAddress[contractAddress] += erc1155Amount;
+    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] += erc1155Amount;
+
+    uint256 mintAmount = erc1155Amount * (10**synthToken.decimals());
+    synthToken.mint(address(this), mintAmount);
 
     // 3. add liquidity to the uniswap pool
-    synthToken.approve(address(router), amount);
+    synthToken.approve(address(router), mintAmount);
     router.addLiquidityETH{value: msg.value}(
       address(synthToken),
-      amount,
-      amount,
+      mintAmount,
+      mintAmount,
       msg.value,
       msg.sender,
       block.timestamp + 60
