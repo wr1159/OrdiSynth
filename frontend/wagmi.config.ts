@@ -9,11 +9,11 @@ export default defineConfig({
         hardhat({
             project: path.resolve(__dirname, "../contracts"),
             deployments: {
-                MockERC1155: {
+                RuneToken: {
                     31337: "0x10855D02C07758d7A9F822d2F15a41f228eC81Dc",
                 },
                 OrdiSynth: {
-                    31337: "0x0432CB554dCDD4012Ee81961020Bde7f40870A27",
+                    31337: "0x2142B5F919A67fa421d118D626A9Ee889D4a5422",
                 },
             },
         }),

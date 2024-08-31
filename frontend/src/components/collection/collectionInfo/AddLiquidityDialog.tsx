@@ -18,24 +18,24 @@ import {
     erc1155Abi,
     iUniswapV2FactoryAbi,
     iUniswapV2PairAbi,
-    mockErc1155Address,
+    runeTokenAddress,
     ordiSynthAbi,
     ordiSynthAddress,
 } from "@/generated";
 import { useToast } from "@/components/ui/use-toast";
-import { batchBalanceToId } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { formatUnits, parseUnits } from "viem";
 import { UNISWAP_FACTORY_ADDRESS, WETH_ADDRESS } from "@/lib/constants";
+import { TokenInfo } from "@/lib/types";
 
 interface AddLiquidityDialogProps {
-    erc1155Balance?: readonly bigint[];
+    ownedOrdinals?: TokenInfo[];
     isApproved: boolean;
     synthAddress: `0x${string}`;
 }
 
 export function AddLiquidityDialog({
-    erc1155Balance,
+    ownedOrdinals,
     isApproved,
     synthAddress,
 }: AddLiquidityDialogProps) {
@@ -44,11 +44,14 @@ export function AddLiquidityDialog({
     const { writeContractAsync } = useWriteContract();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedOrdinal, setSelectedOrdinal] = useState("");
-    const ownedOrdinals = batchBalanceToId(erc1155Balance);
+    const [selectedOrdinal, setSelectedOrdinal] = useState<bigint>();
     const [btcAmount, setBtcAmount] = useState("");
 
-    const handleOpen = () => !isLoading && setIsOpen(!isOpen);
+    const handleOpen = () => {
+        if (isLoading) return;
+        setIsOpen(!isOpen);
+        setSelectedOrdinal(undefined);
+    };
 
     const { data: pairAddress } = useReadContract({
         abi: iUniswapV2FactoryAbi,
@@ -74,12 +77,13 @@ export function AddLiquidityDialog({
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
+            if (!selectedOrdinal) return;
             if (!isApproved) {
                 await writeContractAsync({
                     abi: erc1155Abi,
                     address:
-                        mockErc1155Address[
-                            chainId as keyof typeof mockErc1155Address
+                        runeTokenAddress[
+                            chainId as keyof typeof runeTokenAddress
                         ],
                     functionName: "setApprovalForAll",
                     args: [
@@ -97,10 +101,8 @@ export function AddLiquidityDialog({
                     ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
                 functionName: "addLiquidityToRouter",
                 args: [
-                    mockErc1155Address[
-                        chainId as keyof typeof mockErc1155Address
-                    ],
-                    BigInt(selectedOrdinal),
+                    runeTokenAddress[chainId as keyof typeof runeTokenAddress],
+                    selectedOrdinal,
                     BigInt(1),
                 ],
                 value:
@@ -149,48 +151,55 @@ export function AddLiquidityDialog({
                                 provide liquidity
                             </DialogDescription>
                         </DialogHeader>
-                        <RadioGroup
-                            defaultValue="1"
-                            className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6 max-h-[400px] overflow-y-auto"
-                            name="ordinal"
-                        >
-                            {ownedOrdinals ? (
-                                ownedOrdinals.map((item) => (
-                                    <div
-                                        key={item}
-                                        onClick={() => setSelectedOrdinal(item)}
-                                    >
-                                        <RadioGroupItem
-                                            value={item}
-                                            id={item}
-                                            className="peer sr-only"
-                                        />
-                                        <Label
-                                            htmlFor={item}
-                                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary gap-4 cursor-pointer"
+
+                        {ownedOrdinals ? (
+                            <>
+                                <RadioGroup
+                                    defaultValue="1"
+                                    className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6 max-h-[400px] overflow-y-auto"
+                                    name="ordinal"
+                                >
+                                    {ownedOrdinals.map(({ id, name }) => (
+                                        <div
+                                            key={id}
+                                            onClick={() =>
+                                                setSelectedOrdinal(id)
+                                            }
                                         >
-                                            <img
-                                                src={ordinal}
-                                                className="rounded w-24 h-24"
+                                            <RadioGroupItem
+                                                value={name}
+                                                id={name}
+                                                className="peer sr-only"
                                             />
-                                            Pizza Ninja #{item}
-                                        </Label>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-center">
-                                    You don't own any Pizza Ninjas
-                                </p>
-                            )}
-                        </RadioGroup>
-                        <Input
-                            placeholder="Enter amount"
-                            className="mb-6"
-                            required
-                            defaultValue={btcNeeded}
-                            disabled={!!btcNeeded}
-                            onChange={(e) => setBtcAmount(e.target.value)}
-                        />
+                                            <Label
+                                                htmlFor={name}
+                                                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary gap-4 cursor-pointer"
+                                            >
+                                                <img
+                                                    src={ordinal}
+                                                    className="rounded w-24 h-24"
+                                                />
+                                                {name}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+                                <Input
+                                    placeholder="Enter amount"
+                                    className="mb-6"
+                                    required
+                                    defaultValue={btcNeeded}
+                                    disabled={!!btcNeeded}
+                                    onChange={(e) =>
+                                        setBtcAmount(e.target.value)
+                                    }
+                                />
+                            </>
+                        ) : (
+                            <p className="text-center my-8">
+                                You don't own any Pizza Ninjas
+                            </p>
+                        )}
                         <DialogFooter>
                             <Button
                                 type="submit"

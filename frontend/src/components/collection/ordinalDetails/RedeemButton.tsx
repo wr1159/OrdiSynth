@@ -6,15 +6,12 @@ import {
     useReadContract,
     useWriteContract,
 } from "wagmi";
-import {
-    mockErc1155Address,
-    ordiSynthAbi,
-    ordiSynthAddress,
-} from "@/generated";
+import { runeTokenAddress, ordiSynthAbi, ordiSynthAddress } from "@/generated";
 import { erc20Abi, parseUnits } from "viem";
+import { TokenInfo } from "@/lib/types";
 
 interface RedeemButtonProps {
-    showOrdinal: string;
+    showOrdinal: TokenInfo;
     setIsLoading: (isLoading: boolean) => void;
     handleOpen: () => void;
 }
@@ -33,7 +30,7 @@ export function RedeemButton({
         abi: ordiSynthAbi,
         functionName: "synthAddressByContractAddress",
         address: ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
-        args: [mockErc1155Address[chainId as keyof typeof mockErc1155Address]],
+        args: [runeTokenAddress[chainId as keyof typeof runeTokenAddress]],
     });
 
     const { data: synthBalance } = useReadContract({
@@ -79,19 +76,16 @@ export function RedeemButton({
                     ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
                 functionName: "redeemSynth",
                 args: [
-                    mockErc1155Address[
-                        chainId as keyof typeof mockErc1155Address
-                    ],
-                    BigInt(showOrdinal),
+                    runeTokenAddress[chainId as keyof typeof runeTokenAddress],
+                    showOrdinal.id,
                     BigInt(1),
                 ],
             });
             toast({
                 title: "Success",
-                description: `Redeemed 1 W-Pizza Ninja to get Pizza Ninja #${showOrdinal}`,
+                description: `Redeemed 1 W-Pizza Ninja to get ${showOrdinal.name}`,
             });
         } catch (error) {
-            console.log(error);
             if (error instanceof Error) {
                 toast({
                     title: "Error",

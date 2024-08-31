@@ -16,38 +16,38 @@ import { LoaderIcon } from "lucide-react";
 import { useChainId, useWriteContract } from "wagmi";
 import {
     erc1155Abi,
-    mockErc1155Address,
+    runeTokenAddress,
     ordiSynthAbi,
     ordiSynthAddress,
 } from "@/generated";
 import { useToast } from "@/components/ui/use-toast";
-import { batchBalanceToId } from "@/lib/utils";
+import { TokenInfo } from "@/lib/types";
 
 interface MintDialogProps {
-    erc1155Balance?: readonly bigint[];
+    ownedOrdinals?: TokenInfo[];
     isApproved: boolean;
 }
 
-export function MintDialog({ erc1155Balance, isApproved }: MintDialogProps) {
+export function MintDialog({ ownedOrdinals, isApproved }: MintDialogProps) {
     const { toast } = useToast();
     const chainId = useChainId();
     const { writeContractAsync } = useWriteContract();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedOrdinal, setSelectedOrdinal] = useState("");
-    const ownedOrdinals = batchBalanceToId(erc1155Balance);
+    const [selectedOrdinal, setSelectedOrdinal] = useState<bigint>();
 
     const handleOpen = () => !isLoading && setIsOpen(!isOpen);
 
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
+            if (!selectedOrdinal) return;
             if (!isApproved) {
                 await writeContractAsync({
                     abi: erc1155Abi,
                     address:
-                        mockErc1155Address[
-                            chainId as keyof typeof mockErc1155Address
+                        runeTokenAddress[
+                            chainId as keyof typeof runeTokenAddress
                         ],
                     functionName: "setApprovalForAll",
                     args: [
@@ -65,10 +65,8 @@ export function MintDialog({ erc1155Balance, isApproved }: MintDialogProps) {
                     ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
                 functionName: "depositForSynth",
                 args: [
-                    mockErc1155Address[
-                        chainId as keyof typeof mockErc1155Address
-                    ],
-                    BigInt(selectedOrdinal),
+                    runeTokenAddress[chainId as keyof typeof runeTokenAddress],
+                    selectedOrdinal,
                     BigInt(1),
                 ],
             });
@@ -115,40 +113,40 @@ export function MintDialog({ erc1155Balance, isApproved }: MintDialogProps) {
                                 exchanges.
                             </DialogDescription>
                         </DialogHeader>
-                        <RadioGroup
-                            defaultValue="1"
-                            className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6"
-                            name="ordinal"
-                        >
-                            {ownedOrdinals ? (
-                                ownedOrdinals.map((item) => (
+                        {ownedOrdinals ? (
+                            <RadioGroup
+                                defaultValue="1"
+                                className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6"
+                                name="ordinal"
+                            >
+                                {ownedOrdinals.map(({ id, name }) => (
                                     <div
-                                        key={item}
-                                        onClick={() => setSelectedOrdinal(item)}
+                                        key={id}
+                                        onClick={() => setSelectedOrdinal(id)}
                                     >
                                         <RadioGroupItem
-                                            value={item}
-                                            id={item}
+                                            value={name}
+                                            id={name}
                                             className="peer sr-only"
                                         />
                                         <Label
-                                            htmlFor={item}
+                                            htmlFor={name}
                                             className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary gap-4 cursor-pointer"
                                         >
                                             <img
                                                 src={ordinal}
                                                 className="rounded w-24 h-24"
                                             />
-                                            Pizza Ninja #{item}
+                                            {name}
                                         </Label>
                                     </div>
-                                ))
-                            ) : (
-                                <p className="text-center">
-                                    You don't own any Pizza Ninjas
-                                </p>
-                            )}
-                        </RadioGroup>
+                                ))}
+                            </RadioGroup>
+                        ) : (
+                            <p className="text-center my-8">
+                                You don't own any Pizza Ninjas
+                            </p>
+                        )}
                         <DialogFooter>
                             <Button type="submit" disabled={!selectedOrdinal}>
                                 Confirm

@@ -8,12 +8,13 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { LoaderIcon } from "lucide-react";
-import { CollectionButton } from "../CollectionButton";
 import { TraitsTable } from "./TraitsTable";
 import { RedeemButton } from "./RedeemButton";
+import { PurchaseButton } from "./PurchaseButton";
+import { TokenInfo } from "@/lib/types";
 
 interface OrdinalDetailsProps {
-    showOrdinal: string;
+    showOrdinal: TokenInfo;
 }
 
 export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
@@ -43,7 +44,7 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
                 onClick={handleOpen}
             >
                 <img src={ordinal} className="rounded w-32" />
-                Pizza Ninja #{showOrdinal}
+                {showOrdinal.name}
             </div>
             <DialogContent
                 hideCloseButton={isLoading}
@@ -56,9 +57,7 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
                 ) : (
                     <>
                         <DialogHeader>
-                            <DialogTitle>
-                                Pizza Ninja #{showOrdinal}
-                            </DialogTitle>
+                            <DialogTitle>{showOrdinal.name}</DialogTitle>
                             <DialogDescription />
                         </DialogHeader>
                         <div className="flex gap-8 min-h-96 flex-col md:flex-row">
@@ -72,18 +71,10 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
                                 </div>
                             </div>
                             <div className="w-full flex gap-4 flex-col">
-                                <div>
-                                    <p className="text-2xl font-semibold">
-                                        Price
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        0.15 RBTC
-                                    </p>
-                                </div>
-                                <CollectionButton
-                                    buttonText="Purchase"
-                                    tooltipText="Purchase this Pizza Ninja with RBTC"
-                                    buttonProps={{ className: "w-full" }}
+                                <PurchaseButton
+                                    showOrdinal={showOrdinal}
+                                    setIsLoading={setIsLoading}
+                                    handleOpen={handleOpen}
                                 />
                                 <RedeemButton
                                     showOrdinal={showOrdinal}

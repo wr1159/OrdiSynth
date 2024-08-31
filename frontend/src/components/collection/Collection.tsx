@@ -1,44 +1,46 @@
-import {
-    erc1155SupplyAbi,
-    mockErc1155Address,
-    ordiSynthAddress,
-} from "@/generated";
+import { runeTokenAbi, runeTokenAddress, ordiSynthAddress } from "@/generated";
 import { CollectionInfo } from "./collectionInfo/CollectionInfo";
 import { OrdinalDetails } from "./ordinalDetails/OrdinalDetails";
-import { useChainId, useReadContract } from "wagmi";
-import { batchBalanceToId } from "@/lib/utils";
+import { useChainId, useReadContract, useReadContracts } from "wagmi";
+import { tokensInfoToOwnedOrdinals } from "@/lib/utils";
 
 export function Collection() {
     const chainId = useChainId();
 
-    const { data: totalSupply } = useReadContract({
-        abi: erc1155SupplyAbi,
-        functionName: "totalSupply",
-        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
-    });
+    const runeTokenContract = {
+        address: runeTokenAddress[chainId as keyof typeof runeTokenAddress],
+        abi: runeTokenAbi,
+    };
+    const ordiSynthAddressResolved =
+        ordiSynthAddress[chainId as keyof typeof ordiSynthAddress];
 
-    const { data: ordinalsBatchBalance } = useReadContract({
-        abi: erc1155SupplyAbi,
-        functionName: "balanceOfBatch",
-        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
-        args: [
-            Array.from(
-                { length: Number(totalSupply) },
-                () => ordiSynthAddress[chainId as keyof typeof ordiSynthAddress]
-            ),
-            Array.from({ length: Number(totalSupply) }, (_, i) => BigInt(i)),
-        ],
+    const { data: erc1155Balance } = useReadContract({
+        ...runeTokenContract,
+        functionName: "getUserTokens",
+        args: [ordiSynthAddressResolved],
         query: { refetchInterval: 10000 },
     });
 
-    const ordinalsInLp = batchBalanceToId(ordinalsBatchBalance);
+    const { data: tokensInfoArray } = useReadContracts({
+        contracts: erc1155Balance?.map((id) => ({
+            ...runeTokenContract,
+            functionName: "getTokenInfo",
+            args: [id, ordiSynthAddressResolved],
+        })),
+        query: { refetchInterval: 10000 },
+    });
+
+    const ordinalsInLp = tokensInfoToOwnedOrdinals(
+        tokensInfoArray,
+        erc1155Balance
+    );
 
     return (
         <div className="w-full max-w-[1400px]">
-            <CollectionInfo totalSupply={totalSupply || BigInt(0)} />
+            <CollectionInfo />
             <div className="grid grid-cols-3 md:grid-cols-6 gap-4 m-8">
                 {ordinalsInLp?.map((item) => (
-                    <OrdinalDetails showOrdinal={item.toString()} key={item} />
+                    <OrdinalDetails showOrdinal={item} key={item.id} />
                 ))}
             </div>
         </div>

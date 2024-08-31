@@ -1,6 +1,6 @@
 interface StatProps {
     heading: string;
-    amount?: string;
+    amount?: string | number;
     className?: string;
 }
 

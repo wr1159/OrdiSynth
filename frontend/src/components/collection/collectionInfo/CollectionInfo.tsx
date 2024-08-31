@@ -10,10 +10,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import collectionCover from "@/images/pizzaninja.gif";
 import { Stat } from "./Stat";
 import { MintDialog } from "./MintDialog";
-import { useAccount, useChainId, useReadContract } from "wagmi";
 import {
-    erc1155SupplyAbi,
-    mockErc1155Address,
+    useAccount,
+    useChainId,
+    useReadContract,
+    useReadContracts,
+} from "wagmi";
+import {
+    runeTokenAbi,
+    runeTokenAddress,
     ordiSynthAbi,
     ordiSynthAddress,
 } from "@/generated";
@@ -21,33 +26,41 @@ import { erc20Abi, formatUnits, parseUnits } from "viem";
 import { AddLiquidityDialog } from "./AddLiquidityDialog";
 import { iUniswapV2Router02Abi } from "@/generated";
 import { UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS } from "@/lib/constants";
+import { tokensInfoToOwnedOrdinals } from "@/lib/utils";
 
-interface CollectionInfoProps {
-    totalSupply: bigint;
-}
-
-export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
+export function CollectionInfo() {
     const chainId = useChainId();
     const account = useAccount();
 
+    const runeTokenContract = {
+        address: runeTokenAddress[chainId as keyof typeof runeTokenAddress],
+        abi: runeTokenAbi,
+    };
+
     const { data: erc1155Balance } = useReadContract({
-        abi: erc1155SupplyAbi,
-        functionName: "balanceOfBatch",
-        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
-        args: [
-            Array.from(
-                { length: Number(totalSupply) },
-                () => account.address || "0x"
-            ),
-            Array.from({ length: Number(totalSupply) }, (_, i) => BigInt(i)),
-        ],
+        ...runeTokenContract,
+        functionName: "getUserTokens",
+        args: [account.address || "0x"],
         query: { enabled: !!account.address, refetchInterval: 10000 },
     });
 
+    const { data: tokensInfoArray } = useReadContracts({
+        contracts: erc1155Balance?.map((id) => ({
+            ...runeTokenContract,
+            functionName: "getTokenInfo",
+            args: [id, account.address || "0x"],
+        })),
+        query: { enabled: !!account.address, refetchInterval: 10000 },
+    });
+
+    const ownedOrdinals = tokensInfoToOwnedOrdinals(
+        tokensInfoArray,
+        erc1155Balance
+    );
+
     const { data: isApproved } = useReadContract({
-        abi: erc1155SupplyAbi,
+        ...runeTokenContract,
         functionName: "isApprovedForAll",
-        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
         args: [
             account.address || "0x",
             ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
@@ -59,7 +72,7 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
         abi: ordiSynthAbi,
         functionName: "synthAddressByContractAddress",
         address: ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
-        args: [mockErc1155Address[chainId as keyof typeof mockErc1155Address]],
+        args: [runeTokenAddress[chainId as keyof typeof runeTokenAddress]],
     });
 
     const { data: synthBalance } = useReadContract({
@@ -97,10 +110,6 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
                         className="w-48 h-48 rounded-lg"
                     />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                        <Stat
-                            heading="Total Supply"
-                            amount={totalSupply?.toString()}
-                        />
                         <Stat heading="Owners" amount="1,234" />
                         <Stat
                             heading="Price"
@@ -125,12 +134,7 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
                                 />
                                 <Stat
                                     heading="Number of Bridged Pizza Ninjas"
-                                    amount={erc1155Balance
-                                        ?.reduce(
-                                            (acc, curr) => acc + Number(curr),
-                                            0
-                                        )
-                                        .toString()}
+                                    amount={ownedOrdinals?.length || 0}
                                     className="col-span-2"
                                 />
                             </>
@@ -141,11 +145,11 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
             <CardFooter className="flex justify-end gap-4">
                 <TooltipProvider>
                     <MintDialog
-                        erc1155Balance={erc1155Balance}
+                        ownedOrdinals={ownedOrdinals}
                         isApproved={!!isApproved}
                     />
                     <AddLiquidityDialog
-                        erc1155Balance={erc1155Balance}
+                        ownedOrdinals={ownedOrdinals}
                         isApproved={!!isApproved}
                         synthAddress={synthAddress || "0x"}
                     />
