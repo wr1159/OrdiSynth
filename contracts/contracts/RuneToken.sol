@@ -222,6 +222,21 @@ contract RuneToken is ERC1155, Ownable {
     }
 
     /**
+     * @dev Removes a token ID from the list of tokens owned by a user
+     * @param user Address of the user
+     * @param tokenId ID of the token to remove
+     */
+    function _removeUserToken(address user, uint256 tokenId) internal {
+        for (uint256 i = 0; i < _userTokens[user].length; i++) {
+            if (_userTokens[user][i] == tokenId) {
+                _userTokens[user][i] = _userTokens[user][_userTokens[user].length - 1];
+                _userTokens[user].pop();
+                break;
+            }
+        }
+    }
+
+    /**
      * @dev Override the balanceOf function to consider frozen tokens
      */
     function balanceOf(address account, uint256 tokenId) public view override returns (uint256) {
@@ -240,6 +255,8 @@ contract RuneToken is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(balanceOf(from, id) >= amount + _frozenTokens[id][from], "Insufficient unlocked balance for transfer");
+        _removeUserToken(from, id);
+        _addUserToken(to, id);
         super.safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -255,6 +272,10 @@ contract RuneToken is ERC1155, Ownable {
     ) public virtual override {
         for (uint256 i = 0; i < ids.length; i++) {
             require(balanceOf(from, ids[i]) >= amounts[i] + _frozenTokens[ids[i]][from], "Insufficient unlocked balance for transfer");
+        }
+        for (uint256 i = 0; i < ids.length; i++) {
+            _removeUserToken(from, ids[i]);
+            _addUserToken(to, ids[i]);
         }
         super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }

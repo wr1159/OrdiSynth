@@ -61,6 +61,11 @@ describe("OrdiSynth", () => {
 			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(runeContractAddress))
 			expect(await synthTokenContract.balanceOf(deployer)).to.equal(1000000000000000000n)
 			expect(await synthTokenContract.totalSupply()).to.equal(1000000000000000000n)
+		
+			const contractTokens = await runeContract.getUserTokens(contractAddress);
+			const updatedUserTokens = await runeContract.getUserTokens(deployer);
+			expect(contractTokens.length).to.equal(1)
+			expect(updatedUserTokens.length).to.equal(0)
 		})
 
 		it("Should Transfer Runes and Get SynthToken when token is deposited", async () => {
