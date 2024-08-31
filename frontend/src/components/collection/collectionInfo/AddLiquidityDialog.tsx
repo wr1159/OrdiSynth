@@ -13,9 +13,11 @@ import { CollectionButton } from "../CollectionButton";
 import { useState } from "react";
 import ordinal from "@/images/ordinal.svg";
 import { LoaderIcon } from "lucide-react";
-import { useChainId, useWriteContract } from "wagmi";
+import { useChainId, useReadContract, useWriteContract } from "wagmi";
 import {
     erc1155Abi,
+    iUniswapV2FactoryAbi,
+    iUniswapV2PairAbi,
     mockErc1155Address,
     ordiSynthAbi,
     ordiSynthAddress,
@@ -23,18 +25,19 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { batchBalanceToId } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
+import { UNISWAP_FACTORY_ADDRESS, WETH_ADDRESS } from "@/lib/constants";
 
 interface AddLiquidityDialogProps {
     erc1155Balance?: readonly bigint[];
     isApproved: boolean;
-    tokenPrice?: string | 0n;
+    synthAddress: `0x${string}`;
 }
 
 export function AddLiquidityDialog({
     erc1155Balance,
     isApproved,
-    tokenPrice,
+    synthAddress,
 }: AddLiquidityDialogProps) {
     const { toast } = useToast();
     const chainId = useChainId();
@@ -46,6 +49,27 @@ export function AddLiquidityDialog({
     const [btcAmount, setBtcAmount] = useState("");
 
     const handleOpen = () => !isLoading && setIsOpen(!isOpen);
+
+    const { data: pairAddress } = useReadContract({
+        abi: iUniswapV2FactoryAbi,
+        functionName: "getPair",
+        address: UNISWAP_FACTORY_ADDRESS,
+        args: [WETH_ADDRESS, synthAddress],
+    });
+
+    const { data: reserves } = useReadContract({
+        abi: iUniswapV2PairAbi,
+        functionName: "getReserves",
+        address: pairAddress,
+    });
+
+    let btcNeeded: number | undefined;
+    if (reserves) {
+        const [btcReserveWei, synthReserveWei] = reserves;
+        const btcReserve = parseFloat(formatUnits(btcReserveWei, 18));
+        const synthReserve = parseFloat(formatUnits(synthReserveWei, 18));
+        btcNeeded = btcReserve / synthReserve;
+    }
 
     const handleSubmit = async () => {
         setIsLoading(true);
@@ -80,7 +104,7 @@ export function AddLiquidityDialog({
                     BigInt(1),
                 ],
                 value:
-                    (tokenPrice && parseUnits(tokenPrice.toString(), 18)) ||
+                    (btcNeeded && parseUnits(btcNeeded.toString(), 18)) ||
                     parseUnits(btcAmount, 18),
             });
 
@@ -163,8 +187,8 @@ export function AddLiquidityDialog({
                             placeholder="Enter amount"
                             className="mb-6"
                             required
-                            defaultValue={tokenPrice?.toString()}
-                            disabled={!!tokenPrice}
+                            defaultValue={btcNeeded}
+                            disabled={!!btcNeeded}
                             onChange={(e) => setBtcAmount(e.target.value)}
                         />
                         <DialogFooter>
@@ -172,7 +196,7 @@ export function AddLiquidityDialog({
                                 type="submit"
                                 disabled={
                                     !selectedOrdinal ||
-                                    !(tokenPrice || btcAmount)
+                                    !(btcNeeded || btcAmount)
                                 }
                             >
                                 Confirm

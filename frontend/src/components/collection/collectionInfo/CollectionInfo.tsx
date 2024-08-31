@@ -78,7 +78,7 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
         query: { enabled: !!synthAddress, refetchInterval: 10000 },
     });
 
-    const price = pricePath?.[0] && formatUnits(pricePath[0], 18);
+    const price = pricePath?.[1] && formatUnits(pricePath[1], 18);
 
     return (
         <Card className="m-8">
@@ -105,12 +105,12 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
                         <Stat
                             heading="Price"
                             amount={`${
-                                price?.toString()
-                                    ? parseFloat(price?.toString()).toPrecision(
+                                price
+                                    ? parseFloat(price.toString()).toPrecision(
                                           5
-                                      )
+                                      ) + " RBTC"
                                     : "-"
-                            } RBTC`}
+                            }`}
                         />
                         <Stat heading="24H Volume" amount="0.15 RBTC" />
                         {account.address && (
@@ -147,7 +147,7 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
                     <AddLiquidityDialog
                         erc1155Balance={erc1155Balance}
                         isApproved={!!isApproved}
-                        tokenPrice={price}
+                        synthAddress={synthAddress || "0x"}
                     />
                 </TooltipProvider>
             </CardFooter>
