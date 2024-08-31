@@ -13,21 +13,86 @@ import { CollectionButton } from "../CollectionButton";
 import { useState } from "react";
 import ordinal from "@/images/ordinal.svg";
 import { LoaderIcon } from "lucide-react";
+import { useChainId, useWriteContract } from "wagmi";
+import {
+    erc1155Abi,
+    mockErc1155Address,
+    ordiSynthAbi,
+    ordiSynthAddress,
+} from "@/generated";
+import { useToast } from "@/components/ui/use-toast";
 
-export function MintDialog() {
+interface MintDialogProps {
+    erc1155Balance?: readonly bigint[];
+    isApproved: boolean;
+}
+
+export function MintDialog({ erc1155Balance, isApproved }: MintDialogProps) {
+    const { toast } = useToast();
+    const chainId = useChainId();
+    const { writeContractAsync } = useWriteContract();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const ownedOrdinals = ["1", "2", "3"];
+    const [selectedOrdinal, setSelectedOrdinal] = useState("");
+    const ownedOrdinals = erc1155Balance?.reduce(
+        (result: string[], value, index) => {
+            if (value > 0) result.push(index.toString());
+            return result;
+        },
+        []
+    );
 
     const handleOpen = () => !isLoading && setIsOpen(!isOpen);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const formData = new FormData(e.target as HTMLFormElement);
-        const selectedOrdinal = formData.get("ordinal") as string;
-        console.log(selectedOrdinal);
+    const handleSubmit = async () => {
         setIsLoading(true);
-        // TODO: Mint W-Pizza Ninja
+        try {
+            if (!isApproved) {
+                await writeContractAsync({
+                    abi: erc1155Abi,
+                    address:
+                        mockErc1155Address[
+                            chainId as keyof typeof mockErc1155Address
+                        ],
+                    functionName: "setApprovalForAll",
+                    args: [
+                        ordiSynthAddress[
+                            chainId as keyof typeof ordiSynthAddress
+                        ],
+                        true,
+                    ],
+                });
+            }
+
+            await writeContractAsync({
+                abi: ordiSynthAbi,
+                address:
+                    ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
+                functionName: "depositForSynth",
+                args: [
+                    mockErc1155Address[
+                        chainId as keyof typeof mockErc1155Address
+                    ],
+                    BigInt(selectedOrdinal),
+                    BigInt(1),
+                ],
+            });
+
+            toast({
+                title: "Success",
+                description: `Minted 1 W-Pizza Ninja with Pizza Ninja #${selectedOrdinal}`,
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                toast({
+                    title: "Error",
+                    description: error.message,
+                });
+            }
+        } finally {
+            setIsLoading(false);
+            handleOpen();
+        }
     };
 
     return (
@@ -60,28 +125,39 @@ export function MintDialog() {
                             className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6"
                             name="ordinal"
                         >
-                            {ownedOrdinals.map((item) => (
-                                <div key={item}>
-                                    <RadioGroupItem
-                                        value={item}
-                                        id={item}
-                                        className="peer sr-only"
-                                    />
-                                    <Label
-                                        htmlFor={item}
-                                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary gap-4 cursor-pointer"
+                            {ownedOrdinals ? (
+                                ownedOrdinals.map((item) => (
+                                    <div
+                                        key={item}
+                                        onClick={() => setSelectedOrdinal(item)}
                                     >
-                                        <img
-                                            src={ordinal}
-                                            className="rounded w-24 h-24"
+                                        <RadioGroupItem
+                                            value={item}
+                                            id={item}
+                                            className="peer sr-only"
                                         />
-                                        Pizza Ninja #{item}
-                                    </Label>
-                                </div>
-                            ))}
+                                        <Label
+                                            htmlFor={item}
+                                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary gap-4 cursor-pointer"
+                                        >
+                                            <img
+                                                src={ordinal}
+                                                className="rounded w-24 h-24"
+                                            />
+                                            Pizza Ninja #{item}
+                                        </Label>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center">
+                                    You don't own any Pizza Ninjas
+                                </p>
+                            )}
                         </RadioGroup>
                         <DialogFooter>
-                            <Button type="submit">Confirm</Button>
+                            <Button type="submit" disabled={!selectedOrdinal}>
+                                Confirm
+                            </Button>
                         </DialogFooter>
                     </form>
                 )}

@@ -40,6 +40,17 @@ export function CollectionInfo() {
             ),
             Array.from({ length: Number(totalSupply) }, (_, i) => BigInt(i)),
         ],
+        query: { enabled: !!account.address, refetchInterval: 10000 },
+    });
+
+    const { data: isApproved } = useReadContract({
+        abi: erc1155SupplyAbi,
+        functionName: "isApprovedForAll",
+        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
+        args: [
+            account.address || "0x",
+            ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
+        ],
         query: { enabled: !!account.address },
     });
 
@@ -55,7 +66,7 @@ export function CollectionInfo() {
         functionName: "balanceOf",
         address: synthAddress,
         args: [account.address || "0x"],
-        query: { enabled: !!account.address },
+        query: { enabled: !!account.address, refetchInterval: 10000 },
     });
 
     return (
@@ -82,24 +93,37 @@ export function CollectionInfo() {
                         <Stat heading="Owners" amount="1,234" />
                         <Stat heading="Price" amount="0.15 RBTC" />
                         <Stat heading="24H Volume" amount="0.15 RBTC" />
-                        <Stat
-                            heading="W-Pizza Ninja Balance"
-                            amount={formatUnits(synthBalance || BigInt(0), 18)}
-                            className="col-span-2"
-                        />
-                        <Stat
-                            heading="Number of Bridged Pizza Ninjas"
-                            amount={erc1155Balance
-                                ?.reduce((acc, curr) => acc + Number(curr), 0)
-                                .toString()}
-                            className="col-span-2"
-                        />
+                        {account.address && (
+                            <>
+                                <Stat
+                                    heading="W-Pizza Ninja Balance"
+                                    amount={formatUnits(
+                                        synthBalance || BigInt(0),
+                                        18
+                                    )}
+                                    className="col-span-2"
+                                />
+                                <Stat
+                                    heading="Number of Bridged Pizza Ninjas"
+                                    amount={erc1155Balance
+                                        ?.reduce(
+                                            (acc, curr) => acc + Number(curr),
+                                            0
+                                        )
+                                        .toString()}
+                                    className="col-span-2"
+                                />
+                            </>
+                        )}
                     </div>
                 </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-4">
                 <TooltipProvider>
-                    <MintDialog />
+                    <MintDialog
+                        erc1155Balance={erc1155Balance}
+                        isApproved={!!isApproved}
+                    />
                     <CollectionButton
                         buttonText="Add LP"
                         tooltipText="Provide liquidity to the W-Pizza Ninja pool"
