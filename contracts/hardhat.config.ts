@@ -11,12 +11,6 @@ import "./tasks/utils/balance";
 import "./tasks/utils/block-number";
 import "./tasks/utils/send-eth";
 
-import "./tasks/erc721/mint";
-import "./tasks/erc721/base-uri";
-import "./tasks/erc721/contract-uri";
-
-import "./tasks/erc20/mint";
-
 import "./tasks/erc1155/mint";
 import "./tasks/erc1155/base-uri";
 import "./tasks/erc1155/contract-uri";
