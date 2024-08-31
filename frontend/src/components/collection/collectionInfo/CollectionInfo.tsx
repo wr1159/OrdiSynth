@@ -9,7 +9,6 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import collectionCover from "@/images/pizzaninja.gif";
 import { Stat } from "./Stat";
-import { CollectionButton } from "../CollectionButton";
 import { MintDialog } from "./MintDialog";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import {
@@ -18,7 +17,10 @@ import {
     ordiSynthAbi,
     ordiSynthAddress,
 } from "@/generated";
-import { erc20Abi, formatUnits } from "viem";
+import { erc20Abi, formatUnits, parseUnits } from "viem";
+import { AddLiquidityDialog } from "./AddLiquidityDialog";
+import { iUniswapV2Router02Abi } from "@/generated";
+import { UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS } from "@/lib/constants";
 
 interface CollectionInfoProps {
     totalSupply: bigint;
@@ -68,6 +70,16 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
         query: { enabled: !!account.address, refetchInterval: 10000 },
     });
 
+    const { data: pricePath } = useReadContract({
+        abi: iUniswapV2Router02Abi,
+        functionName: "getAmountsOut",
+        address: UNISWAP_ROUTER_ADDRESS,
+        args: [parseUnits("1", 18), [synthAddress || "0x", WETH_ADDRESS]],
+        query: { enabled: !!synthAddress, refetchInterval: 10000 },
+    });
+
+    const price = pricePath?.[0] && formatUnits(pricePath[0], 18);
+
     return (
         <Card className="m-8">
             <CardHeader>
@@ -90,7 +102,16 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
                             amount={totalSupply?.toString()}
                         />
                         <Stat heading="Owners" amount="1,234" />
-                        <Stat heading="Price" amount="0.15 RBTC" />
+                        <Stat
+                            heading="Price"
+                            amount={`${
+                                price?.toString()
+                                    ? parseFloat(price?.toString()).toPrecision(
+                                          5
+                                      )
+                                    : "-"
+                            } RBTC`}
+                        />
                         <Stat heading="24H Volume" amount="0.15 RBTC" />
                         {account.address && (
                             <>
@@ -123,9 +144,10 @@ export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
                         erc1155Balance={erc1155Balance}
                         isApproved={!!isApproved}
                     />
-                    <CollectionButton
-                        buttonText="Add LP"
-                        tooltipText="Provide liquidity to the W-Pizza Ninja pool"
+                    <AddLiquidityDialog
+                        erc1155Balance={erc1155Balance}
+                        isApproved={!!isApproved}
+                        tokenPrice={price}
                     />
                 </TooltipProvider>
             </CardFooter>
