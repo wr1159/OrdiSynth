@@ -11,8 +11,53 @@ import collectionCover from "@/images/pizzaninja.gif";
 import { Stat } from "./Stat";
 import { CollectionButton } from "../CollectionButton";
 import { MintDialog } from "./MintDialog";
+import { useAccount, useChainId, useReadContract } from "wagmi";
+import {
+    erc1155SupplyAbi,
+    mockErc1155Address,
+    ordiSynthAbi,
+    ordiSynthAddress,
+} from "@/generated";
+import { erc20Abi, formatUnits } from "viem";
 
 export function CollectionInfo() {
+    const chainId = useChainId();
+    const account = useAccount();
+    const { data: totalSupply } = useReadContract({
+        abi: erc1155SupplyAbi,
+        functionName: "totalSupply",
+        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
+    });
+
+    const { data: erc1155Balance } = useReadContract({
+        abi: erc1155SupplyAbi,
+        functionName: "balanceOfBatch",
+        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
+        args: [
+            Array.from(
+                { length: Number(totalSupply) },
+                () => account.address || "0x"
+            ),
+            Array.from({ length: Number(totalSupply) }, (_, i) => BigInt(i)),
+        ],
+        query: { enabled: !!account.address },
+    });
+
+    const { data: synthAddress } = useReadContract({
+        abi: ordiSynthAbi,
+        functionName: "synthAddressByContractAddress",
+        address: ordiSynthAddress[chainId as keyof typeof ordiSynthAddress],
+        args: [mockErc1155Address[chainId as keyof typeof mockErc1155Address]],
+    });
+
+    const { data: synthBalance } = useReadContract({
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        address: synthAddress,
+        args: [account.address || "0x"],
+        query: { enabled: !!account.address },
+    });
+
     return (
         <Card className="m-8">
             <CardHeader>
@@ -30,18 +75,23 @@ export function CollectionInfo() {
                         className="w-48 h-48 rounded-lg"
                     />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                        <Stat heading="Total Supply" amount="1,500" />
+                        <Stat
+                            heading="Total Supply"
+                            amount={totalSupply?.toString()}
+                        />
                         <Stat heading="Owners" amount="1,234" />
                         <Stat heading="Price" amount="0.15 RBTC" />
                         <Stat heading="24H Volume" amount="0.15 RBTC" />
                         <Stat
                             heading="W-Pizza Ninja Balance"
-                            amount="2"
+                            amount={formatUnits(synthBalance || BigInt(0), 18)}
                             className="col-span-2"
                         />
                         <Stat
                             heading="Number of Bridged Pizza Ninjas"
-                            amount="1,234"
+                            amount={erc1155Balance
+                                ?.reduce((acc, curr) => acc + Number(curr), 0)
+                                .toString()}
                             className="col-span-2"
                         />
                     </div>
