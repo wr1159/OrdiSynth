@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "./ERC1155.sol";
 import "./SynthToken.sol";
 
 contract OrdiSynth is ERC1155Holder {
@@ -28,9 +29,13 @@ contract OrdiSynth is ERC1155Holder {
     // 2. set the token address to the synthByContractAddress mapping
     if (synthAddressByContractAddress[contractAddress] != address(0)) {
       synthToken = SynthToken(synthAddressByContractAddress[contractAddress]);
-      
     } else {
-      synthToken = new SynthToken("name", "symbol", address(this));
+      MockERC1155 mockErc1155 = MockERC1155(contractAddress);
+      if (address(mockErc1155) == address(0)) {
+        synthToken = new SynthToken("syntheticERC", "sERC", address(this));
+      } else {
+        synthToken = new SynthToken(string.concat("synthetic", mockErc1155.name()), string.concat("s", mockErc1155.symbol()), address(this));
+      }
       synthAddressByContractAddress[contractAddress] = address(synthToken);
     }
     // 3. mint synth tokens to the user
@@ -71,7 +76,12 @@ contract OrdiSynth is ERC1155Holder {
       synthToken = SynthToken(synthAddressByContractAddress[contractAddress]);
       
     } else {
-      synthToken = new SynthToken("name", "symbol", address(this));
+      MockERC1155 mockErc1155 = MockERC1155(contractAddress);
+      if (address(mockErc1155) == address(0)) {
+        synthToken = new SynthToken("syntheticERC", "sERC", address(this));
+      } else {
+        synthToken = new SynthToken(string.concat("synthetic", mockErc1155.name()), string.concat("s", mockErc1155.symbol()), address(this));
+      }
       synthAddressByContractAddress[contractAddress] = address(synthToken);
     }
     ownedErc1155ByContractAddress[contractAddress] += erc1155Amount;
