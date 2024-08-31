@@ -130,6 +130,45 @@ describe("OrdiSynth", () => {
 			expect(await synthTokenContract.balanceOf(deployer)).to.equal(0)
 			expect(await synthTokenContract.totalSupply()).to.equal(1000000000000000000n)
 		})
+
+		it("Should Add Liquidity Correctly after Deployment", async () => {
+			const signers = await getNamedAccounts()
+			const uniswapRouter = "0xf55c496bb1058690db1401c4b9c19f3f44374961"
+
+			const contract = await ethers.deployContract(
+				"OrdiSynth",
+				[uniswapRouter],
+				await ethers.getSigner(signers.deployer)
+			)
+			const contractAddress = await contract.getAddress()
+			const owner = signers.deployer
+			const user = signers.user
+			const runeContract = await ethers.deployContract(
+				"RuneToken",
+				[owner],
+				await ethers.getSigner(signers.deployer)
+			)
+			const runeContractAddress = await runeContract.getAddress()
+			await runeContract.mintNonFungible(baseURI, name, symbol, user)
+			const runeContractWithUserSigner = runeContract.connect(await ethers.getSigner(user))
+			await runeContractWithUserSigner.setApprovalForAll(contractAddress, true)
+			const [tokenId] = await runeContract.getUserTokens(user)
+
+			const contractWithUserSigner = contract.connect(await ethers.getSigner(user))
+			await contractWithUserSigner.depositForSynth(runeContractAddress, tokenId, 1)
+
+			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(runeContractAddress))
+			const synthTokenContractWithSigner = synthTokenContract.connect(await ethers.getSigner(user))
+			await synthTokenContractWithSigner.approve(contractAddress, 1000000000000000000n)
+			await contractWithUserSigner.redeemSynth(runeContractAddress, tokenId, 1)
+
+			await contractWithUserSigner.addLiquidityToRouter(runeContractAddress, tokenId, 1, {value: "10000"})
+			expect(await runeContract.balanceOf(user, tokenId)).to.equal(0)
+			expect(await runeContract.balanceOf(contractAddress, tokenId)).to.equal(1)
+
+			expect(await synthTokenContract.balanceOf(user)).to.equal(0)
+			expect(await synthTokenContract.totalSupply()).to.equal(1000000000000000000n)
+		})
 	})
 
 	describe("Swap rBTC for RuneToken", () => {
