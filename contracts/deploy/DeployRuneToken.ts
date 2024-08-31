@@ -4,9 +4,10 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployer, user } = await hre.getNamedAccounts()
 
+	console.log(deployer)
 	await hre.deployments.deploy("OrdiSynth", {
 		from: deployer,
-		args: ["0xf55c496bb1058690db1401c4b9c19f3f44374961"],
+		args: [deployer],
 		log: true,
 	})
 
