@@ -85,8 +85,8 @@ contract OrdiSynth is ERC1155Holder {
     router.addLiquidityETH{value: msg.value}(
       address(synthToken),
       mintAmount,
-      mintAmount,
-      msg.value,
+      mintAmount * 95 / 100,
+      msg.value * 95 / 100,
       msg.sender,
       block.timestamp + 60
     );
