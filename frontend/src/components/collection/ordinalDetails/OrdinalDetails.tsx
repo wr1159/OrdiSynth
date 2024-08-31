@@ -3,12 +3,14 @@ import { useState } from "react";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
 import { LoaderIcon } from "lucide-react";
 import { CollectionButton } from "../CollectionButton";
 import { TraitsTable } from "./TraitsTable";
+import { RedeemButton } from "./RedeemButton";
 
 interface OrdinalDetailsProps {
     showOrdinal: string;
@@ -18,7 +20,7 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleOpen = () => setIsOpen(!isOpen);
+    const handleOpen = () => !isLoading && setIsOpen(!isOpen);
     const traits = [
         {
             name: "NINJALERTS HEAD",
@@ -57,6 +59,7 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
                             <DialogTitle>
                                 Pizza Ninja #{showOrdinal}
                             </DialogTitle>
+                            <DialogDescription />
                         </DialogHeader>
                         <div className="flex gap-8 min-h-96 flex-col md:flex-row">
                             <div className="flex gap-4 flex-col">
@@ -80,12 +83,12 @@ export function OrdinalDetails({ showOrdinal }: OrdinalDetailsProps) {
                                 <CollectionButton
                                     buttonText="Purchase"
                                     tooltipText="Purchase this Pizza Ninja with RBTC"
-                                    buttonClassName="w-full"
+                                    buttonProps={{ className: "w-full" }}
                                 />
-                                <CollectionButton
-                                    buttonText="Redeem"
-                                    tooltipText="Redeem 1 W-Pizza Ninja to get this Pizza Ninja"
-                                    buttonClassName="w-full"
+                                <RedeemButton
+                                    showOrdinal={showOrdinal}
+                                    setIsLoading={setIsLoading}
+                                    handleOpen={handleOpen}
                                 />
                                 <TraitsTable traits={traits} />
                             </div>

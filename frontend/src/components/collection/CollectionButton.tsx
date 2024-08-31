@@ -8,20 +8,20 @@ import { Button } from "@/components/ui/button";
 interface CollectionButtonProps {
     buttonText: string;
     tooltipText: string;
-    handleOpen?: () => void;
-    buttonClassName?: string;
+    onClick?: () => void;
+    buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 export function CollectionButton({
     buttonText,
     tooltipText,
-    handleOpen,
-    buttonClassName,
+    onClick,
+    buttonProps,
 }: CollectionButtonProps) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <Button onClick={handleOpen} className={buttonClassName}>
+                <Button onClick={onClick} {...buttonProps}>
                     {buttonText}
                 </Button>
             </TooltipTrigger>

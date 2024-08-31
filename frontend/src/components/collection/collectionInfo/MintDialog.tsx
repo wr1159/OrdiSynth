@@ -95,7 +95,7 @@ export function MintDialog({ erc1155Balance, isApproved }: MintDialogProps) {
             <CollectionButton
                 buttonText="Mint"
                 tooltipText="Convert your Pizza Ninja to an W-Pizza Ninja"
-                handleOpen={handleOpen}
+                onClick={handleOpen}
             />
             <DialogContent
                 hideCloseButton={isLoading}
