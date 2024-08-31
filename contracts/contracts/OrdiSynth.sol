@@ -59,6 +59,7 @@ contract OrdiSynth is ERC1155Holder {
     return;
   }
 
+  // addLiquidityToRouter is a function that allows users to add liquidity to the uniswap pool
   function addLiquidityToRouter(address contractAddress, uint tokenId, uint256 erc1155Amount) public payable {
     SynthToken synthToken;
     IERC1155 erc1155 = IERC1155(contractAddress);
@@ -91,5 +92,35 @@ contract OrdiSynth is ERC1155Holder {
     );
     return;
   }
+
+  // swapTokenFor1155 is a function that allows users to swap any ERC20 tokens on the uniswap pool for synth tokens
+  // which will be redeemed for erc1155 tokens
+  function swapTokenFor1155(address contractAddress, uint tokenId, uint256 erc1155Amount) public payable {
+    SynthToken synthToken = SynthToken(synthAddressByContractAddress[contractAddress]);
+    IERC1155 erc1155 = IERC1155(contractAddress);
+    // 1. swap tokens for synth tokens
+    uint256 synthAmount = erc1155Amount * (10**synthToken.decimals());
+    address[] memory path = new address[](2);
+    path[0] = router.WETH();
+    path[1] = address(synthToken);
+    router.swapETHForExactTokens{value: msg.value}(
+      synthAmount,
+      path,
+      address(this),
+      block.timestamp + 60
+    );
+
+    // 2. burn synth tokens 
+    synthToken.burn(synthAmount);
+
+    ownedErc1155ByContractAddress[contractAddress] -= erc1155Amount;
+    availableErc1155ByContractAddressAndTokenId[contractAddress][tokenId] -= erc1155Amount;
+    // 3. transfer erc1155 tokens to the user
+    erc1155.setApprovalForAll(msg.sender, true);
+    erc1155.safeTransferFrom(address(this), msg.sender, tokenId, erc1155Amount, "");
+    return;
+  }
+
+  receive() external payable {}
   
 }

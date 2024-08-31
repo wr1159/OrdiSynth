@@ -114,8 +114,24 @@ describe("OrdiSynth", () => {
 			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(erc1155contractAddress))
 			expect(await synthTokenContract.balanceOf(deployer)).to.equal(0)
 			expect(await synthTokenContract.totalSupply()).to.equal(1000000000000000000n)
+		})
+	})
 
+	describe("Swap rBTC for ERC1155", () => {
+		it("Should Swap rBTC for ERC1155", async () => {
+			const { contract, contractAddress, deployer, erc1155Contract, erc1155contractAddress, uniswapContract } = await setupFixture()
 
+			await erc1155Contract.mintBatch(deployer, [1], [5])
+			await erc1155Contract.setApprovalForAll(contractAddress, true)
+			await contract.addLiquidityToRouter(erc1155contractAddress, 1, 5, {value: "50000"})
+
+			const synthTokenContract = await ethers.getContractAt("SynthToken", await contract.synthAddressByContractAddress(erc1155contractAddress))
+			expect(await synthTokenContract.totalSupply()).to.equal(5000000000000000000n)
+			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(0)
+			// 15000 instead of 10000 because of the slippage
+			await contract.swapTokenFor1155(erc1155contractAddress, 1, 1, {value: "15000"})
+			expect(await synthTokenContract.totalSupply()).to.equal(4000000000000000000n)
+			expect(await erc1155Contract.balanceOf(deployer, 1)).to.equal(1)
 		})
 	})
 
