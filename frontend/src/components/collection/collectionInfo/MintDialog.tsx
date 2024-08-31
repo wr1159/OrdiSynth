@@ -21,6 +21,7 @@ import {
     ordiSynthAddress,
 } from "@/generated";
 import { useToast } from "@/components/ui/use-toast";
+import { batchBalanceToId } from "@/lib/utils";
 
 interface MintDialogProps {
     erc1155Balance?: readonly bigint[];
@@ -34,13 +35,7 @@ export function MintDialog({ erc1155Balance, isApproved }: MintDialogProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedOrdinal, setSelectedOrdinal] = useState("");
-    const ownedOrdinals = erc1155Balance?.reduce(
-        (result: string[], value, index) => {
-            if (value > 0) result.push(index.toString());
-            return result;
-        },
-        []
-    );
+    const ownedOrdinals = batchBalanceToId(erc1155Balance);
 
     const handleOpen = () => !isLoading && setIsOpen(!isOpen);
 

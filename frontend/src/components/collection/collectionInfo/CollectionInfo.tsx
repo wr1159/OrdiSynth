@@ -20,14 +20,13 @@ import {
 } from "@/generated";
 import { erc20Abi, formatUnits } from "viem";
 
-export function CollectionInfo() {
+interface CollectionInfoProps {
+    totalSupply: bigint;
+}
+
+export function CollectionInfo({ totalSupply }: CollectionInfoProps) {
     const chainId = useChainId();
     const account = useAccount();
-    const { data: totalSupply } = useReadContract({
-        abi: erc1155SupplyAbi,
-        functionName: "totalSupply",
-        address: mockErc1155Address[chainId as keyof typeof mockErc1155Address],
-    });
 
     const { data: erc1155Balance } = useReadContract({
         abi: erc1155SupplyAbi,

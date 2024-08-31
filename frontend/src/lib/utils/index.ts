@@ -2,9 +2,16 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+    return twMerge(clsx(inputs));
 }
 
 export function formatAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+export function batchBalanceToId(erc1155Balance?: readonly bigint[]) {
+    return erc1155Balance?.reduce((result: string[], value, index) => {
+        if (value > 0) result.push(index.toString());
+        return result;
+    }, []);
 }
