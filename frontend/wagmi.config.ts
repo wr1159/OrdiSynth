@@ -10,10 +10,10 @@ export default defineConfig({
             project: path.resolve(__dirname, "../contracts"),
             deployments: {
                 RuneToken: {
-                    31337: "0x10855D02C07758d7A9F822d2F15a41f228eC81Dc",
+                    31337: "0x2142B5F919A67fa421d118D626A9Ee889D4a5422",
                 },
                 OrdiSynth: {
-                    31337: "0x2142B5F919A67fa421d118D626A9Ee889D4a5422",
+                    31337: "0x10855D02C07758d7A9F822d2F15a41f228eC81Dc",
                 },
             },
         }),

@@ -4,23 +4,23 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployer, user, owner } = await hre.getNamedAccounts()
 
+	await hre.deployments.deploy("OrdiSynth", {
+		from: deployer,
+		args: ["0xf55c496bb1058690db1401c4b9c19f3f44374961"],
+		log: true,
+	})
+	const ordisynthDeployment = await hre.deployments.get("OrdiSynth")
+
 	await hre.deployments.deploy("RuneToken", {
 		from: deployer,
-		args: [deployer],
+		args: [owner],
 		log: true,
 	})
 	const runeTokenDeployment = await hre.deployments.get("RuneToken")
 	const runeToken = await hre.ethers.getContractAt("RuneToken", runeTokenDeployment.address)
 
-	await hre.deployments.deploy("OrdiSynth", {
-		from: deployer,
-		args: [owner],
-		log: true,
-	})
-	const ordisynthDeployment = await hre.deployments.get("OrdiSynth")
-
-	const name = "MultiToken"
-	const symbol = "MT"
+	const name = "Pizza Ninjas #1"
+	const symbol = "PizzaNinjas"
 	const baseURI = "ipfs://base-uri/"
 	// account[1] to mint 10 tokens for testing
 	await hre.deployments.execute(
