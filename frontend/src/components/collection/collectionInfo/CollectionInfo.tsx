@@ -85,13 +85,13 @@ export function CollectionInfo() {
 
     const { data: pricePath } = useReadContract({
         abi: iUniswapV2Router02Abi,
-        functionName: "getAmountsOut",
+        functionName: "getAmountsIn",
         address: UNISWAP_ROUTER_ADDRESS,
-        args: [parseUnits("1", 18), [synthAddress || "0x", WETH_ADDRESS]],
+        args: [parseUnits("1", 18), [WETH_ADDRESS, synthAddress || "0x"]],
         query: { enabled: !!synthAddress, refetchInterval: 10000 },
     });
 
-    const price = pricePath?.[1] && formatUnits(pricePath[1], 18);
+    const price = pricePath?.[0] && formatUnits(pricePath[0], 18);
 
     return (
         <Card className="m-8">

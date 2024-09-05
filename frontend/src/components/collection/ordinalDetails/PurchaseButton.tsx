@@ -8,7 +8,7 @@ import {
 } from "@/generated";
 import { UNISWAP_ROUTER_ADDRESS, WETH_ADDRESS } from "@/lib/constants";
 import { formatUnits, parseUnits } from "viem";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { TokenInfo } from "@/lib/types";
 
 interface PurchaseButtonProps {
@@ -35,13 +35,13 @@ export function PurchaseButton({
 
     const { data: pricePath } = useReadContract({
         abi: iUniswapV2Router02Abi,
-        functionName: "getAmountsOut",
+        functionName: "getAmountsIn",
         address: UNISWAP_ROUTER_ADDRESS,
-        args: [parseUnits("1", 18), [synthAddress || "0x", WETH_ADDRESS]],
+        args: [parseUnits("1", 18), [WETH_ADDRESS, synthAddress || "0x"]],
         query: { enabled: !!synthAddress, refetchInterval: 10000 },
     });
 
-    const price = pricePath?.[1] && formatUnits(pricePath[1], 18);
+    const price = pricePath?.[0] && formatUnits(pricePath[0], 18);
 
     const purchase = async () => {
         if (!price) return;
@@ -61,7 +61,7 @@ export function PurchaseButton({
             });
             toast({
                 title: "Success",
-                description: `Swapped ${price} RBTC for Pizza Ninja #${showOrdinal}`,
+                description: `Swapped ${price} RBTC for ${showOrdinal.name}`,
             });
         } catch (error) {
             if (error instanceof Error) {

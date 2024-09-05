@@ -1,7 +1,7 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
-import { Etherspot, Home, Wagmi } from "@/pages";
+import { Etherspot, Home, Wagmi, Test } from "@/pages";
 import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
 
 function App() {
@@ -12,8 +12,9 @@ function App() {
                     <Navbar />
                     <Routes>
                         <Route path="/" element={<Home />} />
-                        <Route path="/aa" element={<Etherspot />} />
-                        <Route path="/wagmi" element={<Wagmi />} />
+                        <Route path="/test" element={<Test />} />
+                        {/* <Route path="/aa" element={<Etherspot />} />
+                        <Route path="/wagmi" element={<Wagmi />} /> */}
                     </Routes>
                     <Toaster />
                 </main>

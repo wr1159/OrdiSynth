@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
     CardTitle,
     CardDescription,
@@ -8,12 +8,12 @@ import {
     CardContent,
     Card,
 } from "@/components/ui/card";
-import Button from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Loader from "@/components/ui/loader";
 import { PrimeSdk, EtherspotBundler } from "@etherspot/prime-sdk";
 import { formatAddress } from "@/lib/utils";
 import { Check, Copy } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { parseEther } from "viem/utils";
 
@@ -21,7 +21,8 @@ export default function Demo() {
     const [sdk, setSdk] = useState<PrimeSdk | null>(null);
     const { toast } = useToast();
     const [loadingEOA, setLoadingEOA] = useState<boolean>(false);
-    const [loadingEtherspotWallet, setLoadingEtherspotWallet] = useState<boolean>(false);
+    const [loadingEtherspotWallet, setLoadingEtherspotWallet] =
+        useState<boolean>(false);
     const [loadingOperation, setLoadingOperation] = useState<boolean>(false);
     const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
     const [eoaWalletAddress, setEoaWalletAddress] = useState("");
@@ -59,7 +60,7 @@ export default function Demo() {
 
     const getBalance = async () => {
         if (!sdk) {
-            console.log('SDK is not initialized');
+            console.log("SDK is not initialized");
             return;
         }
 
@@ -67,10 +68,10 @@ export default function Demo() {
 
         try {
             const balance = await sdk.getNativeBalance();
-            console.log('Account balance:', balance);
+            console.log("Account balance:", balance);
             setBalance(balance.toString());
         } catch (error) {
-            console.error('Error fetching balance:', error);
+            console.error("Error fetching balance:", error);
             toast({
                 title: "Error",
                 description: "Failed to fetch balance.",
@@ -103,14 +104,14 @@ export default function Demo() {
      * This function estimates and transfers a specified value to a recipient using the Arka Paymaster.
      * It performs several steps including validation, fetching addresses, estimating gas,sending the
      *  transaction, and waiting for the receipt.
-     * 
+     *
      * Note: All variables that are not environment variables are for development purposes only.
-     * They are not intended for production use and can be found at 
+     * They are not intended for production use and can be found at
      * https://github.com/etherspot/etherspot-prime-sdk/blob/master/examples/13-paymaster.ts
      */
     const estimateAndTransfer = async () => {
         if (!sdk) {
-            console.log('SDK is not initialized');
+            console.log("SDK is not initialized");
             return;
         }
 
@@ -124,46 +125,57 @@ export default function Demo() {
 
         setLoadingOperation(true);
 
-
-        const apiKey = 'arka_public_key';
+        const apiKey = "arka_public_key";
         const chainID = 31;
 
         try {
-            console.log('Starting useArkaPaymaster function');
+            console.log("Starting useArkaPaymaster function");
 
             const address = await sdk.getCounterFactualAddress();
             setEtherspotWalletAddress(address);
-            console.log('EtherspotWallet address:', address);
+            console.log("EtherspotWallet address:", address);
 
             await sdk.clearUserOpsFromBatch();
-            console.log('Cleared user operations from batch');
+            console.log("Cleared user operations from batch");
 
-            await sdk.addUserOpsToBatch({ to: recipient, value: parseEther(value) });
-            console.log('Transaction batch added with recipient:', recipient, 'and value:', value);
+            await sdk.addUserOpsToBatch({
+                to: recipient,
+                value: parseEther(value),
+            });
+            console.log(
+                "Transaction batch added with recipient:",
+                recipient,
+                "and value:",
+                value
+            );
 
             const op = await sdk.estimate({
-                paymasterDetails: { url: `https://arka.etherspot.io?apiKey=${apiKey}&chainId=${chainID}`, context: { mode: 'sponsor' } }
+                paymasterDetails: {
+                    url: `https://arka.etherspot.io?apiKey=${apiKey}&chainId=${chainID}`,
+                    context: { mode: "sponsor" },
+                },
             });
-            
-            console.log('Estimated UserOp:', op);
+
+            console.log("Estimated UserOp:", op);
 
             const uoHash = await sdk.send(op);
-           
-            console.log('UserOpHash:', uoHash);
+
+            console.log("UserOpHash:", uoHash);
 
             // Wait for transaction receipt
-            console.log('Waiting for transaction...');
-            
+            console.log("Waiting for transaction...");
+
             let userOpsReceipt = null;
             const timeout = Date.now() + 60000; // 1 minute timeout
-            const sleep = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
-            while ((userOpsReceipt == null) && (Date.now() < timeout)) {
+            const sleep = (ms: any) =>
+                new Promise((resolve) => setTimeout(resolve, ms));
+            while (userOpsReceipt == null && Date.now() < timeout) {
                 await sleep(2000);
                 userOpsReceipt = await sdk.getUserOpReceipt(uoHash);
             }
-            console.log('Transaction Receipt:', userOpsReceipt);
+            console.log("Transaction Receipt:", userOpsReceipt);
         } catch (error) {
-            console.error('Error using Arka Paymaster:', error);
+            console.error("Error using Arka Paymaster:", error);
             toast({
                 title: "Error",
                 description: "Failed to estimate transaction cost.",
@@ -173,14 +185,12 @@ export default function Demo() {
         }
     };
 
-
-
     useEffect(() => {
         if (eoaPrivateKey) {
-
             const bundlerApiKey =
                 "eyJvcmciOiI2NTIzZjY5MzUwOTBmNzAwMDFiYjJkZWIiLCJpZCI6IjMxMDZiOGY2NTRhZTRhZTM4MGVjYjJiN2Q2NDMzMjM4IiwiaCI6Im11cm11cjEyOCJ9";
-            const customBundlerUrl = "https://rootstocktestnet-bundler.etherspot.io/";
+            const customBundlerUrl =
+                "https://rootstocktestnet-bundler.etherspot.io/";
 
             const primeSdk = new PrimeSdk(
                 { privateKey: eoaPrivateKey },
@@ -205,8 +215,9 @@ export default function Demo() {
                     Account Abstraction
                 </CardTitle>
                 <CardDescription className="text-gray-500 dark:text-gray-400">
-                    Empower your users to seamlessly interact with your decentralized
-                    application without the hassle of managing private keys.
+                    Empower your users to seamlessly interact with your
+                    decentralized application without the hassle of managing
+                    private keys.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -227,7 +238,11 @@ export default function Demo() {
                     {eoaWalletAddress && (
                         <p className="mt-3 opacity-60 flex gap-3">
                             Wallet: {formatAddress(eoaWalletAddress)}{" "}
-                            <button onClick={() => copy(eoaWalletAddress, setCopiedEOA)}>
+                            <button
+                                onClick={() =>
+                                    copy(eoaWalletAddress, setCopiedEOA)
+                                }
+                            >
                                 {copiedEOA ? <Check /> : <Copy />}
                             </button>
                         </p>
@@ -250,7 +265,14 @@ export default function Demo() {
                     {etherspotWalletAddress && (
                         <p className="mt-3 opacity-60 flex gap-3">
                             Wallet: {formatAddress(etherspotWalletAddress)}{" "}
-                            <button onClick={() => copy(etherspotWalletAddress, setCopiedEtherspot)}>
+                            <button
+                                onClick={() =>
+                                    copy(
+                                        etherspotWalletAddress,
+                                        setCopiedEtherspot
+                                    )
+                                }
+                            >
                                 {copiedEtherspot ? <Check /> : <Copy />}
                             </button>
                         </p>

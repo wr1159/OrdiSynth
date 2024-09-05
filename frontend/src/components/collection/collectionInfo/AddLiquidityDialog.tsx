@@ -10,7 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CollectionButton } from "../CollectionButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ordinal from "@/images/ordinal.svg";
 import { LoaderIcon } from "lucide-react";
 import { useChainId, useReadContract, useWriteContract } from "wagmi";
@@ -22,7 +22,7 @@ import {
     ordiSynthAbi,
     ordiSynthAddress,
 } from "@/generated";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { formatUnits, parseUnits } from "viem";
 import { UNISWAP_FACTORY_ADDRESS, WETH_ADDRESS } from "@/lib/constants";
@@ -46,6 +46,7 @@ export function AddLiquidityDialog({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedOrdinal, setSelectedOrdinal] = useState<bigint>();
     const [btcAmount, setBtcAmount] = useState("");
+    const [btcNeeded, setBtcNeeded] = useState<number>();
 
     const handleOpen = () => {
         if (isLoading) return;
@@ -66,13 +67,14 @@ export function AddLiquidityDialog({
         address: pairAddress,
     });
 
-    let btcNeeded: number | undefined;
-    if (reserves) {
-        const [btcReserveWei, synthReserveWei] = reserves;
-        const btcReserve = parseFloat(formatUnits(btcReserveWei, 18));
-        const synthReserve = parseFloat(formatUnits(synthReserveWei, 18));
-        btcNeeded = btcReserve / synthReserve;
-    }
+    useEffect(() => {
+        if (reserves) {
+            const [btcReserveWei, synthReserveWei] = reserves;
+            const btcReserve = parseFloat(formatUnits(btcReserveWei, 18));
+            const synthReserve = parseFloat(formatUnits(synthReserveWei, 18));
+            setBtcNeeded(btcReserve / synthReserve);
+        }
+    }, [reserves]);
 
     const handleSubmit = async () => {
         setIsLoading(true);

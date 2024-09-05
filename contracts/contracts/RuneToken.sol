@@ -57,7 +57,7 @@ contract RuneToken is ERC1155, Ownable {
         uint256 initialSupply,
         uint256 defaultMintAmount,
         address receiver
-    ) public onlyOwner {
+    ) public {
         require(
             initialSupply <= maxSupply,
             "Initial supply exceeds max supply"
@@ -92,7 +92,7 @@ contract RuneToken is ERC1155, Ownable {
         string memory runeName,
         string memory symbol,
         address receiver
-    ) public onlyOwner {
+    ) public {
         bytes32 tokenIdHash = keccak256(abi.encodePacked(runeName));
         uint256 tokenId = uint256(tokenIdHash);
         require(_tokenInfos[tokenId].maxSupply == 0, "Token ID already exists");

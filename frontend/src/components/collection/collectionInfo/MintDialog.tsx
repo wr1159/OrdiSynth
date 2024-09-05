@@ -20,7 +20,7 @@ import {
     ordiSynthAbi,
     ordiSynthAddress,
 } from "@/generated";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { TokenInfo } from "@/lib/types";
 
 interface MintDialogProps {
