@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: indexer
+networks:
+- id: 31
+  rpc_config:
+    url: https://public-node.testnet.rsk.co
+    initial_block_interval: 10000 # Integer
+    backoff_multiplicative: 0.8 # Float
+    acceleration_additive: 2000 # Integer
+    interval_ceiling: 10000 # Integer
+    backoff_millis: 5000 # Integer
+    query_timeout_millis: 20000 # Integer
+  start_block: 5000000
+  contracts:
+  - name: OrdiSynth
+    address:
+    - 0x10855D02C07758d7A9F822d2F15a41f228eC81Dc
+    handler: src/EventHandlers.ts
+    events:
+    - event: LiquidityAdded(address indexed user, address indexed contractAddress, uint256 indexed tokenId, uint256 runeAmount, uint256 ethAmount, address synthTokenAddress)
+    - event: SynthDeposited(address indexed user, address indexed contractAddress, uint256 indexed tokenId, uint256 runeAmount, address synthTokenAddress)
+    - event: SynthRedeemed(address indexed user, address indexed contractAddress, uint256 indexed tokenId, uint256 runeAmount, address synthTokenAddress)
+    - event: TokenSwappedForRune(address indexed user, address indexed contractAddress, uint256 indexed tokenId, uint256 runeAmount, address synthTokenAddress)
+  - name: RuneToken
+    address:
+    - 0x2142B5F919A67fa421d118D626A9Ee889D4a5422
+    handler: src/EventHandlers.ts
+    events:
+    - event: ApprovalForAll(address indexed account, address indexed operator, bool approved)
+    - event: OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+    - event: TokensFrozen(address indexed account, uint256 indexed tokenId, uint256 amount)
+    - event: TokensUnfrozen(address indexed account, uint256 indexed tokenId, uint256 amount)
+    - event: TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)
+    - event: TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)
+    - event: URI(string value, uint256 indexed id)
+rollback_on_reorg: false

@@ -1,0 +1,88 @@
+type OrdiSynth_LiquidityAdded {
+  id: ID!
+  user: String!
+  contractAddress: String!
+  tokenId: BigInt!
+  runeAmount: BigInt!
+  ethAmount: BigInt!
+  synthTokenAddress: String!
+}
+
+type OrdiSynth_SynthDeposited {
+  id: ID!
+  user: String!
+  contractAddress: String!
+  tokenId: BigInt!
+  runeAmount: BigInt!
+  synthTokenAddress: String!
+}
+
+type OrdiSynth_SynthRedeemed {
+  id: ID!
+  user: String!
+  contractAddress: String!
+  tokenId: BigInt!
+  runeAmount: BigInt!
+  synthTokenAddress: String!
+}
+
+type OrdiSynth_TokenSwappedForRune {
+  id: ID!
+  user: String!
+  contractAddress: String!
+  tokenId: BigInt!
+  runeAmount: BigInt!
+  synthTokenAddress: String!
+}
+
+type RuneToken_ApprovalForAll {
+  id: ID!
+  account: String!
+  operator: String!
+  approved: Boolean!
+}
+
+type RuneToken_OwnershipTransferred {
+  id: ID!
+  previousOwner: String!
+  newOwner: String!
+}
+
+type RuneToken_TokensFrozen {
+  id: ID!
+  account: String!
+  tokenId: BigInt!
+  amount: BigInt!
+}
+
+type RuneToken_TokensUnfrozen {
+  id: ID!
+  account: String!
+  tokenId: BigInt!
+  amount: BigInt!
+}
+
+type RuneToken_TransferBatch {
+  id: ID!
+  operator: String!
+  from: String!
+  to: String!
+  ids: [BigInt!]!
+  values: [BigInt!]!
+}
+
+type RuneToken_TransferSingle {
+  id: ID!
+  operator: String!
+  from: String!
+  to: String!
+  event_id: BigInt!
+  value: BigInt!
+}
+
+type RuneToken_URI {
+  id: ID!
+  value: String!
+  event_id: BigInt!
+}
+
