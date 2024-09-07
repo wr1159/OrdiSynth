@@ -73,7 +73,7 @@ export function MintDialog({ ownedOrdinals, isApproved }: MintDialogProps) {
 
             toast({
                 title: "Success",
-                description: `Minted 1 W-Pizza Ninja with Pizza Ninja #${selectedOrdinal}`,
+                description: `Minted 1 sPizzaNinjas with Pizza Ninja #${selectedOrdinal}`,
             });
         } catch (error) {
             if (error instanceof Error) {
@@ -92,7 +92,7 @@ export function MintDialog({ ownedOrdinals, isApproved }: MintDialogProps) {
         <Dialog open={isOpen} onOpenChange={handleOpen}>
             <CollectionButton
                 buttonText="Mint"
-                tooltipText="Convert your Pizza Ninja to an W-Pizza Ninja"
+                tooltipText="Convert your Pizza Ninja to an sPizzaNinjas"
                 onClick={handleOpen}
             />
             <DialogContent
@@ -106,10 +106,10 @@ export function MintDialog({ ownedOrdinals, isApproved }: MintDialogProps) {
                 ) : (
                     <form onSubmit={handleSubmit}>
                         <DialogHeader>
-                            <DialogTitle>Mint W-Pizza Ninja</DialogTitle>
+                            <DialogTitle>Mint sPizzaNinjas</DialogTitle>
                             <DialogDescription>
                                 Your Pizza Ninja (ERC1155) will be converted to
-                                a W-Pizza Ninja (ERC20) that can be traded on
+                                a sPizzaNinjas (ERC20) that can be traded on
                                 exchanges.
                             </DialogDescription>
                         </DialogHeader>

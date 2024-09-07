@@ -83,7 +83,7 @@ export function RedeemButton({
             });
             toast({
                 title: "Success",
-                description: `Redeemed 1 W-Pizza Ninja to get ${showOrdinal.name}`,
+                description: `Redeemed 1 sPizzaNinjas to get ${showOrdinal.name}`,
             });
         } catch (error) {
             if (error instanceof Error) {
@@ -101,7 +101,7 @@ export function RedeemButton({
     return (
         <CollectionButton
             buttonText="Redeem"
-            tooltipText="Redeem 1 W-Pizza Ninja to get this Pizza Ninja"
+            tooltipText="Redeem 1 sPizzaNinjas to get this Pizza Ninja"
             buttonProps={{
                 className: "w-full",
                 disabled: !synthBalance || synthBalance < BigInt(1),

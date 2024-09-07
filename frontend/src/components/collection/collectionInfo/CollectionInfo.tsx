@@ -125,7 +125,7 @@ export function CollectionInfo() {
                         {account.address && (
                             <>
                                 <Stat
-                                    heading="W-Pizza Ninja Balance"
+                                    heading="sPizzaNinjas Balance"
                                     amount={formatUnits(
                                         synthBalance || BigInt(0),
                                         18
