@@ -1,7 +1,7 @@
-import Logo from "@/components/ui/logo";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Link } from "react-router-dom";
 import { SheetMenu } from "@/components/admin-panel/sheet-menu";
+import logo from "@/images/logo.png";
 
 export default function Navbar(): JSX.Element {
     return (
@@ -11,7 +11,7 @@ export default function Navbar(): JSX.Element {
                     <SheetMenu />
                 </div>
                 <Link to="/">
-                    <Logo className="w-[150px] h-[50px]" />
+                    <img src={logo} alt="logo" className="w-64" />
                 </Link>
             </div>
             <ConnectButton
