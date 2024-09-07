@@ -14,9 +14,9 @@
 		"./test",
 		"./typechain-types",
 		"./deploy",
-		"./types.d.ts"
+		"./types.d.ts",
+		"tasks/ordisynth/DeployTest.ts",
+		"tasks/ordisynth/DeployOrdiSynth.ts"
 	],
-	"files": [
-		"./hardhat.config.ts"
-	]
+	"files": ["./hardhat.config.ts"]
 }
